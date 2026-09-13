@@ -39,7 +39,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: 30px auto;
       padding: 0 15px;
     }
@@ -101,7 +101,7 @@
 
     .playlist {
       border: 1px solid #e5e7eb;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 18px;
       margin-top: 15px;
       background: #fafafa;
@@ -112,11 +112,12 @@
       font-weight: bold;
       color: #6b7280;
       text-transform: uppercase;
+      margin-bottom: 5px;
     }
 
     .playlist h3 {
-      margin-top: 5px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      font-size: 19px;
     }
 
     .playlist a {
@@ -124,6 +125,18 @@
       word-break: break-all;
       text-decoration: none;
       font-size: 14px;
+    }
+
+    .player {
+      margin-top: 18px;
+      width: 100%;
+    }
+
+    .player iframe {
+      width: 100%;
+      height: 315px;
+      border: none;
+      border-radius: 12px;
     }
 
     .buttons {
@@ -149,6 +162,16 @@
       padding: 20px;
     }
 
+    .note {
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 15px;
+      color: #555;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
     footer {
       text-align: center;
       padding: 25px;
@@ -163,6 +186,10 @@
 
       .card {
         padding: 18px;
+      }
+
+      .player iframe {
+        height: 220px;
       }
     }
   </style>
@@ -204,18 +231,24 @@
       <input
         type="url"
         id="playlistLink"
-        placeholder="https://..."
+        placeholder="Paste your playlist link here"
       >
 
       <button class="save-btn" onclick="savePlaylist()">
         💾 Save Playlist
       </button>
 
+      <div class="note">
+        💡 YouTube links can be played directly inside this dashboard.
+        Spotify, Apple Music and other links can be opened in their original app/website.
+      </div>
+
     </div>
+
 
     <div class="card">
 
-      <h2>📚 Saved Playlists</h2>
+      <h2>🎵 My Playlists</h2>
 
       <div id="playlistList">
         <div class="empty">
@@ -227,14 +260,17 @@
 
   </div>
 
+
   <footer>
     UMA ENTERPRISES © 2026
   </footer>
+
 
   <script>
 
     let playlists =
       JSON.parse(localStorage.getItem("umaPlaylists")) || [];
+
 
     function savePlaylist() {
 
@@ -247,42 +283,63 @@
       const link =
         document.getElementById("playlistLink").value.trim();
 
+
       if (name === "" || link === "") {
+
         alert("Please enter playlist name and link.");
+
         return;
       }
+
 
       try {
+
         new URL(link);
+
       } catch (error) {
+
         alert("Please enter a valid playlist link.");
+
         return;
       }
 
+
       const playlist = {
+
         id: Date.now(),
+
         platform: platform,
+
         name: name,
+
         link: link
+
       };
 
+
       playlists.push(playlist);
+
 
       localStorage.setItem(
         "umaPlaylists",
         JSON.stringify(playlists)
       );
 
+
       document.getElementById("playlistName").value = "";
+
       document.getElementById("playlistLink").value = "";
+
 
       displayPlaylists();
     }
+
 
     function displayPlaylists() {
 
       const list =
         document.getElementById("playlistList");
+
 
       if (playlists.length === 0) {
 
@@ -292,117 +349,29 @@
         return;
       }
 
+
       list.innerHTML = "";
+
 
       playlists.forEach(function(playlist) {
 
         const item =
           document.createElement("div");
 
+
         item.className = "playlist";
 
-        item.innerHTML = `
-          <div class="platform">
-            ${escapeHTML(playlist.platform)}
-          </div>
 
-          <h3>
-            ${escapeHTML(playlist.name)}
-          </h3>
+        let playerHTML = "";
 
-          <a
-            href="${escapeAttribute(playlist.link)}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ${escapeHTML(playlist.link)}
-          </a>
 
-          <div class="buttons">
+        const youtubeID =
+          getYouTubeID(playlist.link);
 
-            <button
-              class="open-btn"
-              onclick="openPlaylist(${playlist.id})"
-            >
-              🔗 Open Playlist
-            </button>
 
-            <button
-              class="delete-btn"
-              onclick="deletePlaylist(${playlist.id})"
-            >
-              🗑️ Delete
-            </button>
+        if (youtubeID) {
 
-          </div>
-        `;
-
-        list.appendChild(item);
-      });
-    }
-
-    function openPlaylist(id) {
-
-      const playlist =
-        playlists.find(function(item) {
-          return item.id === id;
-        });
-
-      if (playlist) {
-
-        window.open(
-          playlist.link,
-          "_blank",
-          "noopener,noreferrer"
-        );
-
-      }
-    }
-
-    function deletePlaylist(id) {
-
-      const confirmDelete =
-        confirm("Are you sure you want to delete this playlist?");
-
-      if (!confirmDelete) {
-        return;
-      }
-
-      playlists =
-        playlists.filter(function(item) {
-          return item.id !== id;
-        });
-
-      localStorage.setItem(
-        "umaPlaylists",
-        JSON.stringify(playlists)
-      );
-
-      displayPlaylists();
-    }
-
-    function escapeHTML(text) {
-
-      const div =
-        document.createElement("div");
-
-      div.textContent = text;
-
-      return div.innerHTML;
-    }
-
-    function escapeAttribute(text) {
-
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    displayPlaylists();
-
-  </script>
-
-</body>
-</html>
+          playerHTML = `
+            <div class="player">
+              <iframe
+                src="https://www.youtube.com/embed/${youtubeID}"
