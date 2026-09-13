@@ -1,1 +1,414 @@
-< !DOCTYPE html> < html lang="en"> < head>  < meta name="viewport" content="width=device-width, initial scale=1.0"> < title>My Playlist Dashboard< /title> < /head> < body> < h1>🎵 My Playlist Dashboard < /h1> < p>Save your favorite playlist links below. < /p> < ul> < li>Spotify – Add your link here < /li> < li>YouTube Music – Add your link here < /li> < li>Apple Music – Add your link here < /li> < /ul> < /body < /html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Playlist Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f6f8;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #d1d5db;
+      font-size: 15px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      margin-top: 15px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #111827;
+    }
+
+    button {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .save-btn {
+      width: 100%;
+      margin-top: 20px;
+      background: #111827;
+      color: white;
+    }
+
+    .save-btn:hover {
+      background: #000000;
+    }
+
+    .playlist {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 15px;
+      background: #fafafa;
+    }
+
+    .playlist-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .platform {
+      font-size: 13px;
+      font-weight: bold;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .playlist h3 {
+      margin-top: 5px;
+      margin-bottom: 8px;
+    }
+
+    .playlist a {
+      color: #2563eb;
+      word-break: break-all;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .open-btn {
+      background: #2563eb;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #dc2626;
+      color: white;
+    }
+
+    .empty {
+      text-align: center;
+      color: #6b7280;
+      padding: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .playlist-top {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🎵 My Playlist Dashboard</h1>
+    <p>Save and manage your favorite playlists in one place.</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>➕ Add New Playlist</h2>
+
+      <label for="platform">Select Platform</label>
+
+      <select id="platform">
+        <option value="Spotify">Spotify</option>
+        <option value="YouTube Music">YouTube Music</option>
+        <option value="YouTube">YouTube</option>
+        <option value="Apple Music">Apple Music</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label for="playlistName">Playlist Name</label>
+
+      <input
+        type="text"
+        id="playlistName"
+        placeholder="Example: My Favourite Songs"
+      >
+
+      <label for="playlistLink">Playlist Link</label>
+
+      <input
+        type="url"
+        id="playlistLink"
+        placeholder="https://..."
+      >
+
+      <button class="save-btn" onclick="savePlaylist()">
+        💾 Save Playlist
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>📚 My Saved Playlists</h2>
+
+      <div id="playlistList">
+        <div class="empty">
+          No playlists saved yet.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    My Playlist Dashboard © 2026
+  </footer>
+
+  <script>
+
+    let playlists =
+      JSON.parse(localStorage.getItem("myPlaylists")) || [];
+
+    function savePlaylist() {
+
+      const platform =
+        document.getElementById("platform").value;
+
+      const name =
+        document.getElementById("playlistName").value.trim();
+
+      const link =
+        document.getElementById("playlistLink").value.trim();
+
+      if (name === "" || link === "") {
+        alert("Please enter playlist name and link.");
+        return;
+      }
+
+      try {
+        new URL(link);
+      } catch (error) {
+        alert("Please enter a valid playlist link.");
+        return;
+      }
+
+      const playlist = {
+        id: Date.now(),
+        platform: platform,
+        name: name,
+        link: link
+      };
+
+      playlists.push(playlist);
+
+      localStorage.setItem(
+        "myPlaylists",
+        JSON.stringify(playlists)
+      );
+
+      document.getElementById("playlistName").value = "";
+      document.getElementById("playlistLink").value = "";
+
+      displayPlaylists();
+    }
+
+    function displayPlaylists() {
+
+      const list =
+        document.getElementById("playlistList");
+
+      if (playlists.length === 0) {
+        list.innerHTML =
+          '<div class="empty">No playlists saved yet.</div>';
+        return;
+      }
+
+      list.innerHTML = "";
+
+      playlists.forEach(function(playlist) {
+
+        const item = document.createElement("div");
+
+        item.className = "playlist";
+
+        item.innerHTML = `
+          <div class="playlist-top">
+            <div>
+              <div class="platform">
+                ${escapeHTML(playlist.platform)}
+              </div>
+
+              <h3>
+                ${escapeHTML(playlist.name)}
+              </h3>
+
+              <a
+                href="${escapeAttribute(playlist.link)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ${escapeHTML(playlist.link)}
+              </a>
+            </div>
+          </div>
+
+          <div class="buttons">
+
+            <button
+              class="open-btn"
+              onclick="openPlaylist(${playlist.id})"
+            >
+              🔗 Open Playlist
+            </button>
+
+            <button
+              class="delete-btn"
+              onclick="deletePlaylist(${playlist.id})"
+            >
+              🗑️ Delete
+            </button>
+
+          </div>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    function openPlaylist(id) {
+
+      const playlist =
+        playlists.find(function(item) {
+          return item.id === id;
+        });
+
+      if (playlist) {
+        window.open(
+          playlist.link,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }
+    }
+
+    function deletePlaylist(id) {
+
+      const confirmDelete =
+        confirm("Are you sure you want to delete this playlist?");
+
+      if (!confirmDelete) {
+        return;
+      }
+
+      playlists =
+        playlists.filter(function(item) {
+          return item.id !== id;
+        });
+
+      localStorage.setItem(
+        "myPlaylists",
+        JSON.stringify(playlists)
+      );
+
+      displayPlaylists();
+    }
+
+    function escapeHTML(text) {
+
+      const div =
+        document.createElement("div");
+
+      div.textContent = text;
+
+      return div.innerHTML;
+    }
+
+    function escapeAttribute(text) {
+
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    displayPlaylists();
+
+  </script>
+
+</body>
+</html>
